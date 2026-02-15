@@ -276,7 +276,11 @@ class MainWindow(QMainWindow):
         self.settings_dist2_input.setValue(self.storage.setting_distance_2)
         params_layout.addWidget(self.settings_dist2_input, 1, 1)
 
-        params_layout.addWidget(QLabel("Угол β между оптическими осями видеокамеры и проектора\nв точке их пересечения на объекте (°):"), 2, 0)
+
+        lable_angle = QLabel("Угол β между оптическими осями видеокамеры и проектора<br>в точке их пересечения на объекте (°):<br> <i>(для просмотра схемы наведите на текст)</i>")
+        lable_angle.setTextFormat(Qt.TextFormat.RichText)
+        lable_angle.setToolTip("<img src='img/scheme.png' width='700'>")
+        params_layout.addWidget(lable_angle, 2, 0)
         self.settings_angle_input = QDoubleSpinBox()
         self.settings_angle_input.setRange(-360.0, 360.0)
         self.settings_angle_input.setValue(self.storage.setting_angle)
@@ -285,7 +289,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(params_group)
 
         # 2. Группа настроек проектора
-        projector_group = QGroupBox("Настройки проектора (Экрана)")
+        projector_group = QGroupBox("Настройки проектора")
         projector_layout = QGridLayout(projector_group)
 
         projector_layout.addWidget(QLabel("Выберите проектор:"), 0, 0)
@@ -297,7 +301,7 @@ class MainWindow(QMainWindow):
         self.projector_res_label.setText("Разрешение: (не выбрано)")
         projector_layout.addWidget(self.projector_res_label, 1, 1)
 
-        refresh_projectors_btn = QPushButton("Обновить список экранов")
+        refresh_projectors_btn = QPushButton("Обновить список доступных проекторов")
         refresh_projectors_btn.clicked.connect(self.populate_projector_list)
         projector_layout.addWidget(refresh_projectors_btn, 2, 1)
 
@@ -306,7 +310,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(projector_group)
 
         # 3. Группа настроек камеры
-        camera_group = QGroupBox("Настройки камеры")
+        camera_group = QGroupBox("Настройки видеокамеры")
         camera_layout = QGridLayout(camera_group)
 
         camera_layout.addWidget(QLabel("Выберите камеру:"), 0, 0)
@@ -318,7 +322,7 @@ class MainWindow(QMainWindow):
         self.camera_res_selector.setEnabled(False)
         camera_layout.addWidget(self.camera_res_selector, 1, 1)
 
-        refresh_cameras_btn = QPushButton("Обновить список камер")
+        refresh_cameras_btn = QPushButton("Обновить список доступных камер")
         refresh_cameras_btn.clicked.connect(self.populate_camera_list)
         camera_layout.addWidget(refresh_cameras_btn, 2, 1)
 
@@ -327,7 +331,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(camera_group)
 
         # 4. Кнопка сохранения
-        save_btn = QPushButton("Сохранить настройки в память")
+        save_btn = QPushButton("Записать настройки")
         save_btn.clicked.connect(self.save_app_settings)
         layout.addWidget(save_btn)
 

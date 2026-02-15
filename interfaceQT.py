@@ -1,4 +1,5 @@
 import sys
+import os
 import math
 import cv2
 import numpy as np
@@ -25,6 +26,12 @@ import api
 from settings import WindowSettings
 from analysis import Analizator, BY_DEFORM_MSG, DeformType
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 class TextureType:
     WORKING_RASTER = "WORKING_RASTER"
@@ -275,7 +282,7 @@ class MainWindow(QMainWindow):
 
         lable_scheme = QLabel("<b>СХЕМА</b> <i>(наведите курсор для просмотра)</i>")
         lable_scheme.setTextFormat(Qt.TextFormat.RichText)
-        lable_scheme.setToolTip("<img src='img/scheme.png' width='700'>")
+        lable_scheme.setToolTip(f"<img src='{resource_path('img/scheme.png')}' width='700'>")
         lable_scheme.setStyleSheet("""
             QLabel {
                 border: 1px solid #e0e0e0;

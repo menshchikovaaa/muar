@@ -8,3 +8,4 @@
 * pyinstaller (`pip install pyinstaller`) *для создания `.exe`*
 
 `pyinstaller -F main.py`
+`pyinstaller --onefile --add-data "img;img" main.py` - сборка с ресурсами (для отображения схемы)

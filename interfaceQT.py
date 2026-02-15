@@ -263,16 +263,20 @@ class MainWindow(QMainWindow):
         params_layout.addWidget(QLabel("Расстояние от проектора до объекта - О`C (м):"), 0, 0)
         self.settings_dist1_input = QDoubleSpinBox()
         self.settings_dist1_input.setRange(0.01, 10000.0)
+        self.settings_dist1_input.setSingleStep(0.01)
+        self.settings_dist1_input.setDecimals(2)
         self.settings_dist1_input.setValue(self.storage.setting_distance_1)
         params_layout.addWidget(self.settings_dist1_input, 0, 1)
 
         params_layout.addWidget(QLabel("Расстояние от плоскости мнимого растра до объекта - K1C (м):"), 1, 0)
         self.settings_dist2_input = QDoubleSpinBox()
         self.settings_dist2_input.setRange(0.01, 10000.0)
+        self.settings_dist2_input.setSingleStep(0.01)
+        self.settings_dist2_input.setDecimals(2)
         self.settings_dist2_input.setValue(self.storage.setting_distance_2)
         params_layout.addWidget(self.settings_dist2_input, 1, 1)
 
-        params_layout.addWidget(QLabel("Угол β между оптическими осями(°):"), 2, 0)
+        params_layout.addWidget(QLabel("Угол β между оптическими осями видеокамеры и проектора\nв точке их пересечения на объекте (°):"), 2, 0)
         self.settings_angle_input = QDoubleSpinBox()
         self.settings_angle_input.setRange(-360.0, 360.0)
         self.settings_angle_input.setValue(self.storage.setting_angle)
@@ -520,7 +524,6 @@ class MainWindow(QMainWindow):
         tab.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         self.content_stack.addTab(tab, "Анализ")
 
-    # == НОВЫЙ МЕТОД: Управление состоянием UI ==
     def update_ui_state(self):
         """
         Обновляет состояние (активность) вкладок и кнопок
@@ -784,9 +787,7 @@ class MainWindow(QMainWindow):
         # 3. Проектор *найден*
         self.project_btn.setEnabled(not is_projecting and wr_exists and has_projector)
 
-    # ==
 
-    # В interfaceQT.py, класс MainWindow
     def start_camera_preview(self):
         """Запуск предпросмотра камеры"""
         try:
@@ -814,23 +815,16 @@ class MainWindow(QMainWindow):
     def update_camera_preview(self):
         """Обновление preview камеры"""
 
-        # Сначала проверяем, должна ли камера работать
         if not api.is_camera_processing():
-            # Камера была остановлена (например, сделан снимок)
             self.camera_timer.stop()
-            self.update_ui_state()  # Обновляем UI, чтобы кнопки стали неактивными
+            self.update_ui_state()
             return
 
-        # Если мы здесь, камера должна работать. Пытаемся получить кадр.
         frame = api.get_camera_frame()
 
         if frame is not None:
-            # Отлично, кадр есть, обновляем превью
             self.camera_preview.set_image(frame)
         else:
-            # Кадр == None, НО камера все еще работает (проверено выше).
-            # Это просто гонка состояний, кадр еще не готов.
-            # Ничего не делаем, просто ждем следующего тика таймера.
             pass
 
     def capture_object_raster(self):
@@ -838,15 +832,13 @@ class MainWindow(QMainWindow):
         try:
             # Останавливаем предпросмотр
             self.camera_timer.stop()
-            #api.stop_camera_preview()
 
             # Захватываем изображение
             captured_image = api.capture_from_camera()
 
             if captured_image and captured_image.image is not None:
                 self.storage.objects[TextureType.OBJECT_RASTER] = captured_image
-                # self.or_preview.set_image(captured_image.image) # or_preview больше нет
-                self.camera_preview.set_image(captured_image.image)  # Показываем в превью
+                self.camera_preview.set_image(captured_image.image)
                 self.or_info.setText("Снимок сделан и сохранен в память")
                 self.update_ui_state()  # ==
             else:
@@ -868,8 +860,7 @@ class MainWindow(QMainWindow):
             if filename:
                 raster = api.load_image_by_tag(filename, "raw")
                 self.storage.objects[TextureType.OBJECT_RASTER] = raster
-                # self.or_preview.set_image(raster.image) # or_preview больше нет
-                self.camera_preview.set_image(raster.image)  # Показываем в превью
+                self.camera_preview.set_image(raster.image)
                 self.or_info.setText(f"Загружен: {filename.split('/')[-1]}")
                 self.update_ui_state()  # ==
         except Exception as e:
@@ -901,14 +892,12 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            #win_settings = WindowSettings()
-            # (Стало) Используем разрешение камеры из настроек
             cam_res = self.storage.selected_camera_resolution
             if not cam_res or len(cam_res) != 2:
                 QMessageBox.warning(self, "Ошибка", "Разрешение камеры не задано в 'Настройках'.")
                 return
             win_settings = WindowSettings(width=cam_res[0], height=cam_res[1])
-            # === КОНЕЦ ИЗМЕНЕНИЯ ===
+
             raster_settings = api.raster_settings(
                 params['angle'], params['distance'], params['thickness']
             )
@@ -916,7 +905,7 @@ class MainWindow(QMainWindow):
             self.storage.objects[TextureType.IMAGINARY_RASTER] = raster
             self.ir_preview.set_image(raster.image)
             self.ir_info.setText("Создан новый мнимый растр")
-            self.update_ui_state()  # ==
+            self.update_ui_state()
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Ошибка создания растра: {e}")
 
@@ -945,39 +934,6 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Ошибка загрузки: {e}")
 
-    # def process_object_raster(self):
-    #     try:
-    #         if TextureType.OBJECT_RASTER not in self.storage.objects:
-    #             QMessageBox.warning(self, "Предупреждение", "Объектный растр отсутствует.")
-    #             return
-    #
-    #         or_image = self.storage.objects[TextureType.OBJECT_RASTER]
-    #
-    #         # ДОБАВЬТЕ ПРОВЕРКИ:
-    #         if or_image is None:
-    #             QMessageBox.warning(self, "Ошибка", "Объектный растр не содержит данных")
-    #             return
-    #
-    #         if or_image.image is None:
-    #             QMessageBox.warning(self, "Ошибка", "Изображение объектного растра равно None")
-    #             return
-    #
-    #         print(f"Размер изображения: {or_image.image.shape if or_image.image is not None else 'None'}")
-    #         print(f"Тип источника: {or_image.source}")
-    #
-    #         ws = WindowSettings(1024, 768)
-    #         processed_image = api.processor_pipeline(or_image, 16, ws)
-    #
-    #         if processed_image is None or processed_image.image is None:
-    #             QMessageBox.warning(self, "Ошибка", "Обработка вернула None")
-    #             return
-    #
-    #         self.storage.objects[TextureType.PROCESSED_OR] = processed_image
-    #         self.processed_preview.set_image(processed_image.image)
-    #         self.update_ui_state()  # ==
-    #     except Exception as e:
-    #         QMessageBox.critical(self, "Ошибка", f"Ошибка обработки растра: {e}")
-
     def process_object_raster(self):
         try:
             if TextureType.OBJECT_RASTER not in self.storage.objects:
@@ -997,11 +953,9 @@ class MainWindow(QMainWindow):
             print(f"Размер изображения: {or_image.image.shape if or_image.image is not None else 'None'}")
             print(f"Тип источника: {or_image.source}")
 
-            # === НАЧАЛО ИЗМЕНЕНИЯ ===
-            # Получаем значение порога из интерфейса
             threshold_value = self.processing_threshold_input.value()
             print(f"Обработка с порогом: {threshold_value}")
-            # === КОНЕЦ ИЗМЕНЕНИЯ ===
+
 
             #ws = WindowSettings(1024, 768)
             cam_res = self.storage.selected_camera_resolution
@@ -1009,10 +963,8 @@ class MainWindow(QMainWindow):
                 QMessageBox.warning(self, "Ошибка", "Разрешение камеры не задано в 'Настройках'.")
                 return
             ws = WindowSettings(width=cam_res[0], height=cam_res[1])
-            # === ИЗМЕНЕНИЕ ===
-            # Передаем новый параметр вместо '16'
+
             processed_image = api.processor_pipeline(or_image, threshold_value, ws)
-            # === КОНЕЦ ИЗМЕНЕНИЯ ===
 
             if processed_image is None or processed_image.image is None:
                 QMessageBox.warning(self, "Ошибка", "Обработка вернула None")
@@ -1070,8 +1022,6 @@ class MainWindow(QMainWindow):
 
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Ошибка анализа: {e}")
-
-    # В классе MainWindow (interfaceQT.py)
 
     def populate_projector_list(self):
         """Находит доступные экраны и заполняет QComboBox"""

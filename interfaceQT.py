@@ -70,16 +70,7 @@ class ImageViewer(QLabel):
                                              Qt.TransformationMode.SmoothTransformation))
             else:
                 self.setText("Неподдерживаемый формат изображения")
-            #     bytes_per_line = 3 * width
-            #     format = QImage.Format.Format_RGB888
-            #     if image_array.shape[2] == 4:
-            #         bytes_per_line = 4 * width
-            #         format = QImage.Format.Format_RGBA8888
-            #
-            # # Конвертируем numpy array в QImage
-            # qimage = QImage(image_array.data, width, height, bytes_per_line, format)
-            # pixmap = QPixmap.fromImage(qimage)
-            # self.setPixmap(pixmap.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio))
+
 
         except Exception as e:
             print(f"Ошибка отображения изображения: {e}")
@@ -276,15 +267,27 @@ class MainWindow(QMainWindow):
         self.settings_dist2_input.setValue(self.storage.setting_distance_2)
         params_layout.addWidget(self.settings_dist2_input, 1, 1)
 
-
-        lable_angle = QLabel("Угол β между оптическими осями видеокамеры и проектора<br>в точке их пересечения на объекте (°):<br> <i>(для просмотра схемы наведите на текст)</i>")
-        lable_angle.setTextFormat(Qt.TextFormat.RichText)
-        lable_angle.setToolTip("<img src='img/scheme.png' width='700'>")
-        params_layout.addWidget(lable_angle, 2, 0)
+        params_layout.addWidget(QLabel("Угол β между оптическими осями видеокамеры и проектора\nв точке их пересечения на объекте (°):"), 2, 0)
         self.settings_angle_input = QDoubleSpinBox()
         self.settings_angle_input.setRange(-360.0, 360.0)
         self.settings_angle_input.setValue(self.storage.setting_angle)
         params_layout.addWidget(self.settings_angle_input, 2, 1)
+
+        lable_scheme = QLabel("<b>СХЕМА</b> <i>(наведите курсор для просмотра)</i>")
+        lable_scheme.setTextFormat(Qt.TextFormat.RichText)
+        lable_scheme.setToolTip("<img src='img/scheme.png' width='700'>")
+        lable_scheme.setStyleSheet("""
+            QLabel {
+                border: 1px solid #e0e0e0;
+                border-radius: 2px;
+                padding: 8px;
+            }
+            QLabel:hover {
+                background-color: #e0e0e0;
+            }
+        """)
+        lable_scheme.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        params_layout.addWidget(lable_scheme, 3, 0, 1, 2)
 
         layout.addWidget(params_group)
 
